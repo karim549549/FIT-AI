@@ -10,6 +10,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { EmailModule } from './email/email.module';
 
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ProgressModule } from './progress/progress.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     ScheduleModule.forRoot(),
     EmailModule,
     EventEmitterModule.forRoot(),
+    ProgressModule,
   ],
   controllers: [],
   providers: [],
