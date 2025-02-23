@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Recipe" ALTER COLUMN "steps" SET DATA TYPE TEXT,
+ALTER COLUMN "ingredients" SET DATA TYPE TEXT;

@@ -1,0 +1,186 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String  @id @default(uuid())
+  name              String  
+  email             String  @unique
+  isEmailConfirmed  Boolean @default(false)
+  hashPassword      String?
+  googleId          String?
+  role              String  @default("USER") 
+
+  profile           Profile?
+  
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  deletedAt         DateTime?
+}
+
+model Profile {
+  id                   Int @id @default(autoincrement())
+  userId               String @unique
+  user                 User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  profilePicUrl        String?
+  height               Int
+  weight               Int
+  birthday             DateTime
+  activityLevel        Int
+  gender               String
+  goal                 Int
+  isProfileCompleted   Boolean @default(false)
+
+  dietaryPreferences   DietaryPreferences?
+  notificationSetting  NotificationSetting?
+  dietPlans            DietPlan[]
+  progressLogs         ProgressLog[]
+  feedbacks            Feedback[]
+
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model DietaryPreferences {
+  id                     Int @id @default(autoincrement())
+  profileId              Int @unique
+  profile                Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  allergies              Json?
+  cuisinePreferences     Json?
+  cookingTimePreference  Int?
+  foodVarietyLevel       Float?
+  mealFrequency          Int?
+  durationInWeeks  Int    @default(4)
+  
+
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+}
+
+model NotificationSetting {
+  id                    Int @id @default(autoincrement())
+  profileId             Int @unique
+  profile               Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  email                 Boolean @default(true)
+  push                  Boolean @default(true)
+  systemNotification    Boolean @default(true)
+  appNotification       Boolean @default(true)
+
+  fcmToken              String?  // 🔹 Stores user's Firebase Cloud Messaging token
+
+  notifications         Notification[]
+  archivedNotifications ArchivedNotification[]
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @default(now())
+}
+
+model Notification {
+  id                     Int @id @default(autoincrement())
+  notificationSettingId  Int
+  notificationSetting    NotificationSetting @relation(fields: [notificationSettingId], references: [id], onDelete: Cascade)
+
+  message                String
+  type                   String @default("PUSH") 
+  scheduledAt            DateTime?  
+  isRead                 Boolean @default(false) 
+
+  createdAt              DateTime @default(now())
+}
+
+model ArchivedNotification {
+  id                     Int @id @default(autoincrement())
+  notificationSettingId  Int
+  notificationSetting    NotificationSetting @relation(fields: [notificationSettingId], references: [id], onDelete: Cascade)
+  
+  message                String
+  scheduledAt            DateTime?
+  archivedAt             DateTime @default(now())
+}
+
+model ProgressLog {
+  id               Int @id @default(autoincrement())
+  profileId        Int
+  profile          Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  weight           Float
+  height           Float
+  bodyFat          Float
+  muscleMass       Float
+  water            Float
+  boneMass         Float
+  visceralFat      Float
+  metabolicAge     Int
+  createdAt        DateTime @default(now())
+}
+
+model DietPlan {
+  id                Int @id @default(autoincrement())
+  profileId         Int
+  profile           Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  published         Boolean @default(false)
+  numberOfRatings   Int  @default(0)
+  averageRating     Float @default(0)
+  startDate         DateTime
+  results           String[] 
+  endDate           DateTime
+  meals             Meal[]
+  feedbacks         Feedback[]
+  createdAt         DateTime @default(now())
+}
+
+model Feedback {
+  id          Int @id @default(autoincrement())
+  dietPlanId  Int
+  dietPlan    DietPlan @relation(fields: [dietPlanId], references: [id], onDelete: Cascade)
+  rating      Int
+  message     String
+  profileId   Int
+  profile     Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+}
+
+model Meal {
+  id          Int @id @default(autoincrement())
+  dietPlanId  Int
+  dietPlan    DietPlan @relation(fields: [dietPlanId], references: [id], onDelete: Cascade)
+  day         Int
+  recipeId    Int
+  recipe      Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+}
+
+model Recipe {
+  id               Int @id @default(autoincrement())
+  recipeId         Int?
+  title            String
+  fullName         String?
+  description      String?
+  imageUrl         String?
+  cuisine          String?
+  cookTime         Float?
+  serving         Float?
+  calories        Float?
+  carbohydrates   Float?
+  protein         Float?
+  fat             Float?
+  saturatedFat    Float?
+  cholesterol     Float?
+  fiber          Float?
+  potassium      Float?
+  sodium         Float?
+  sugar          Float?
+  dairyFree       Boolean @default(false)
+  glutenFree      Boolean @default(false)
+  mealType        String?
+  ingredients     Json?
+  ingredientNames Json?
+  instructions    String?
+  dietType        String?
+  meals           Meal[]
+}
